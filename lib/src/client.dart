@@ -20,7 +20,7 @@ typedef ProgressCallback = void Function(
     int count, int total, http.Response? response);
 
 /// Callback to listen when upload finishes
-typedef CompleteCallback = void Function(http.Response response);
+typedef CompleteCallback = void Function(http.Response? response);
 
 /// This is a client for the tus(https://tus.io) protocol.
 class TusClient {
@@ -236,7 +236,7 @@ class TusClient {
       // Upload completed
       _state = TusUploadState.completed;
       cache?.remove(_fingerprint);
-      _onComplete?.call(response!);
+      _onComplete?.call(response);
     }
   }
 
