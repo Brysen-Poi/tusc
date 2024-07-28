@@ -145,7 +145,6 @@ class TusClient {
           response);
     }
 
-    _uploadURI = _parseToURI(locationURL);
     if(_state == TusUploadState.paused){
       _uploadURI = _parseToURI(locationURL);
       cache?.set(_fingerprint, _uploadURI.toString());
