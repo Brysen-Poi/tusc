@@ -146,7 +146,16 @@ class TusClient {
     }
 
     _uploadURI = _parseToURI(locationURL);
-    cache?.set(_fingerprint, _uploadURI.toString());
+    if(_state == TusUploadState.paused){
+      _uploadURI = _parseToURI(locationURL);
+      cache?.set(_fingerprint, _uploadURI.toString());
+      return;
+    }
+    if(_state == TusUploadState.cancelled){
+      _uploadURI = _parseToURI(locationURL);
+      // No need to set fingerprint
+      return;
+    }
     _state = TusUploadState.created;
   }
 
@@ -163,11 +172,20 @@ class TusClient {
   Future<void> _upload() async {
     _errorMessage = null;
     if (!await canResume()) {
+      if (_state == TusUploadState.cancelled || _state == TusUploadState.paused) {
+        return;
+      }
       await _createUpload();
+    }
+
+    if (_state == TusUploadState.cancelled || _state == TusUploadState.paused) {
+      return;
     }
 
     // Get offset from server
     _offset = await _getOffset();
+
+    if(_state == TusUploadState.cancelled || _state == TusUploadState.paused){return;}
 
     http.Response? response;
 
@@ -317,6 +335,8 @@ class TusClient {
       tusResumableHeader: tusVersion,
     };
     final response = await httpClient.head(_uploadURI, headers: offsetHeaders);
+
+    if(_state == TusUploadState.cancelled || _state == TusUploadState.paused){return 0;}
 
     if (!(response.statusCode >= 200 && response.statusCode < 300)) {
       _state = TusUploadState.error;
