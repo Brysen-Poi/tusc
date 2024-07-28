@@ -155,6 +155,8 @@ class TusClient {
       // No need to set fingerprint
       return;
     }
+    _uploadURI = _parseToURI(locationURL);
+    cache?.set(_fingerprint, _uploadURI.toString());
     _state = TusUploadState.created;
   }
 
